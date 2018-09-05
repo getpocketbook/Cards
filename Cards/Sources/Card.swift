@@ -188,7 +188,7 @@ import UIKit
     
     //MARK: - Actions
     
-    @objc func cardTapped() {
+    @objc public func cardTapped() {
         self.delegate?.cardDidTapInside?(card: self)
         
         if let vc = superVC {
