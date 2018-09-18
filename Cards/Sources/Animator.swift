@@ -42,13 +42,15 @@ class Animator: NSObject, UIViewControllerAnimatedTransitioning {
             
             if #available(iOS 12, *) {
                 // Blur and fade with completion
-                detailVC.blurView.alpha = 0
-                detailVC.snap.alpha = 0
-                self.card.backgroundIV.layer.cornerRadius = self.card.cardRadius
-                
-                detailVC.layout(self.card.originalFrame, isPresenting: false, isAnimating: false)
-                self.card.addSubview(detailVC.card.backgroundIV)
-                transitionContext.completeTransition(true)
+                UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
+                    detailVC.blurView.alpha = 0
+                    detailVC.snap.alpha = 0
+                    self.card.backgroundIV.layer.cornerRadius = self.card.cardRadius
+                }, completion: { _ in
+                    detailVC.layout(self.card.originalFrame, isPresenting: false, isAnimating: false)
+                    self.card.addSubview(detailVC.card.backgroundIV)
+                    transitionContext.completeTransition(true)
+                })
                 
                 // Layout with bounce effect
                 detailVC.layout(self.card.originalFrame, isPresenting: false, transform: bounce)
@@ -92,9 +94,11 @@ class Animator: NSObject, UIViewControllerAnimatedTransitioning {
         
         if #available(iOS 12, *) {
             // Blur and fade with completion
-            self.card.transform = CGAffineTransform.identity    // Reset card identity after push back on tap
-            detailVC.blurView.alpha = 1
-            detailVC.snap.alpha = 1
+            UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
+                self.card.transform = CGAffineTransform.identity    // Reset card identity after push back on tap
+                detailVC.blurView.alpha = 1
+                detailVC.snap.alpha = 1
+            })
             self.card.backgroundIV.layer.cornerRadius = 0
             
             detailVC.layout(self.card.originalFrame, isPresenting: true, isAnimating: false, transform: .identity)
