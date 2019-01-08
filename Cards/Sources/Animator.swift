@@ -40,21 +40,30 @@ class Animator: NSObject, UIViewControllerAnimatedTransitioning {
             let cardBackgroundFrame = detailVC.scrollView.convert(card.backgroundIV.frame, to: nil)
             let bounce = self.bounceTransform(cardBackgroundFrame, to: card.originalFrame)
             
-            if #available(iOS 12, *) {
-                // Blur and fade with completion
-                UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
-                    detailVC.blurView.alpha = 0
-                    detailVC.snap.alpha = 0
-                    self.card.backgroundIV.layer.cornerRadius = self.card.cardRadius
-                }, completion: { _ in
-                    detailVC.layout(self.card.originalFrame, isPresenting: false, isAnimating: false)
-                    self.card.addSubview(detailVC.card.backgroundIV)
-                    transitionContext.completeTransition(true)
-                })
+            // Blur and fade with completion
+            UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
                 
-                // Layout with bounce effect
-                detailVC.layout(self.card.originalFrame, isPresenting: false, transform: bounce)
-                detailVC.layout(self.card.originalFrame, isPresenting: false)
+                detailVC.blurView.alpha = 0
+                detailVC.snap.alpha = 0
+                self.card.backgroundIV.layer.cornerRadius = self.card.cardRadius
+                
+            }, completion: { _ in
+                
+                detailVC.layout(self.card.originalFrame, isPresenting: false, isAnimating: false)
+                self.card.addSubview(detailVC.card.backgroundIV)
+                transitionContext.completeTransition(true)
+            })
+            
+            // Layout with bounce effect
+            let originalFrame = card.originalFrame
+            UIView.animate(withDuration: velocity/2, delay: 0, options: .curveEaseOut, animations: {
+                
+                detailVC.layout(originalFrame, isPresenting: false, transform: bounce)
+                self.card.delegate?.cardIsHidingDetail?(card: self.card)
+                
+            }) { _ in UIView.animate(withDuration: self.velocity/2, delay: 0, options: .curveEaseOut, animations: {
+                    
+                detailVC.layout(originalFrame, isPresenting: false)
                 self.card.delegate?.cardIsHidingDetail?(card: self.card)
             } else {
                 // Blur and fade with completion
@@ -88,7 +97,7 @@ class Animator: NSObject, UIViewControllerAnimatedTransitioning {
         let detailVC = to as! DetailViewController
         let bounce = self.bounceTransform(card.originalFrame, to: card.backgroundIV.frame)
         
-        container.bringSubview(toFront: detailVC.view)
+        container.bringSubviewToFront(detailVC.view)
         detailVC.card = card
         detailVC.layout(card.originalFrame, isPresenting: false)
         
