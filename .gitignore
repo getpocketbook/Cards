@@ -5,3 +5,5 @@ Pod/
 Images/\.DS_Store
 
 \.DS_Store
+Demo/Demo.xcodeproj/xcuserdata/macrossyun.xcuserdatad/xcschemes/xcschememanagement.plist
+Demo/Pods/Pods.xcodeproj/xcuserdata/macrossyun.xcuserdatad/xcschemes/xcschememanagement.plist
