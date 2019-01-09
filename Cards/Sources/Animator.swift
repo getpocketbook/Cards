@@ -4,11 +4,9 @@
 //
 //  Created by Paolo Cuscela on 23/10/17.
 //
-
 import UIKit
 
 class Animator: NSObject, UIViewControllerAnimatedTransitioning {
-
     
     fileprivate var presenting: Bool
     fileprivate var velocity = 0.6
@@ -62,33 +60,13 @@ class Animator: NSObject, UIViewControllerAnimatedTransitioning {
                 self.card.delegate?.cardIsHidingDetail?(card: self.card)
                 
             }) { _ in UIView.animate(withDuration: self.velocity/2, delay: 0, options: .curveEaseOut, animations: {
-                    
+                
                 detailVC.layout(originalFrame, isPresenting: false)
                 self.card.delegate?.cardIsHidingDetail?(card: self.card)
-            } else {
-                // Blur and fade with completion
-                UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
-                    detailVC.blurView.alpha = 0
-                    detailVC.snap.alpha = 0
-                    self.card.backgroundIV.layer.cornerRadius = self.card.cardRadius
-                }, completion: { _ in
-                    detailVC.layout(self.card.originalFrame, isPresenting: false, isAnimating: false)
-                    self.card.addSubview(detailVC.card.backgroundIV)
-                    transitionContext.completeTransition(true)
-                })
-                
-                // Layout with bounce effect
-                UIView.animate(withDuration: velocity/2, delay: 0, options: .curveEaseOut, animations: {
-                    detailVC.layout(self.card.originalFrame, isPresenting: false, transform: bounce)
-                    self.card.delegate?.cardIsHidingDetail?(card: self.card)
-                }, completion: { _ in
-                    UIView.animate(withDuration: self.velocity/2, delay: 0, options: .curveEaseOut, animations: {
-                        detailVC.layout(self.card.originalFrame, isPresenting: false)
-                        self.card.delegate?.cardIsHidingDetail?(card: self.card)
-                    })
-                })
+            })
             }
             return
+            
         }
         
         // Detail View Controller Present Animations
@@ -101,45 +79,34 @@ class Animator: NSObject, UIViewControllerAnimatedTransitioning {
         detailVC.card = card
         detailVC.layout(card.originalFrame, isPresenting: false)
         
-        if #available(iOS 12, *) {
-            // Blur and fade with completion
-            UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
-                self.card.transform = CGAffineTransform.identity    // Reset card identity after push back on tap
-                detailVC.blurView.alpha = 1
-                detailVC.snap.alpha = 1
-            })
+        // Blur and fade with completion
+        UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
+            
+            self.card.transform = CGAffineTransform.identity    // Reset card identity after push back on tap
+            detailVC.blurView.alpha = 1
+            detailVC.snap.alpha = 1
             self.card.backgroundIV.layer.cornerRadius = 0
+            
+        }, completion: { _ in
             
             detailVC.layout(self.card.originalFrame, isPresenting: true, isAnimating: false, transform: .identity)
             transitionContext.completeTransition(true)
+        })
+        
+        // Layout with bounce effect
+        UIView.animate(withDuration: velocity/2, delay: 0, options: .curveEaseOut, animations: {
             
-            // Layout with bounce effect
             detailVC.layout(detailVC.view.frame, isPresenting: true, transform: bounce)
+            self.card.delegate?.cardIsShowingDetail?(card: self.card)
+            
+        }) { _ in UIView.animate(withDuration: self.velocity/2, delay: 0, options: .curveEaseOut, animations: {
+            
             detailVC.layout(detailVC.view.frame, isPresenting: true)
             self.card.delegate?.cardIsShowingDetail?(card: self.card)
-        } else {
-            // Blur and fade with completion
-            UIView.animate(withDuration: velocity, delay: 0, options: .curveEaseOut, animations: {
-                self.card.transform = CGAffineTransform.identity    // Reset card identity after push back on tap
-                detailVC.blurView.alpha = 1
-                detailVC.snap.alpha = 1
-                self.card.backgroundIV.layer.cornerRadius = 0
-            }, completion: { _ in
-                detailVC.layout(self.card.originalFrame, isPresenting: true, isAnimating: false, transform: .identity)
-                transitionContext.completeTransition(true)
-            })
             
-            // Layout with bounce effect
-            UIView.animate(withDuration: velocity/2, delay: 0, options: .curveEaseOut, animations: {
-                detailVC.layout(detailVC.view.frame, isPresenting: true, transform: bounce)
-                self.card.delegate?.cardIsShowingDetail?(card: self.card)
-            }, completion: { _ in
-                UIView.animate(withDuration: self.velocity/2, delay: 0, options: .curveEaseOut, animations: {
-                    detailVC.layout(detailVC.view.frame, isPresenting: true)
-                    self.card.delegate?.cardIsShowingDetail?(card: self.card)
-                })
-            })
+        })
         }
+        
     }
     
     private func bounceTransform(_ from: CGRect, to: CGRect ) -> CGAffineTransform {
@@ -155,12 +122,10 @@ class Animator: NSObject, UIViewControllerAnimatedTransitioning {
         
         return CGAffineTransform(translationX: xMove, y: yMove)
     }
-
+    
     
     func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         return velocity
     }
     
 }
-
-
